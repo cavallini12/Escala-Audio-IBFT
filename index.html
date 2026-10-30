@@ -200,9 +200,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
       </div>
     </div>
     <div class="mobile-mnav">
-      <button class="mnav-btn" onclick="changeMonth(-1)">&#8249;</button>
+      <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
       <span class="month-label" id="m-month-label"></span>
-      <button class="mnav-btn" onclick="changeMonth(1)">&#8250;</button>
+      <button class="mnav-btn" onclick="changeMonth(1)">›</button>
     </div>
     <div class="wd-row" style="margin-bottom:6px;padding:0 2px">
       <div class="wd">D</div><div class="wd">S</div><div class="wd">T</div>
@@ -213,7 +213,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
     <div class="m-cal" id="m-cal"></div>
     <div class="today-card">
       <div class="today-card-label">&#x1F4CD; Escala de hoje</div>
-      <div id="m-today-body"><span class="today-empty">&#8212;</span></div>
+      <div id="m-today-body"><span class="today-empty">—</span></div>
     </div>
   </div>
   <div class="bottom-nav">
@@ -244,16 +244,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
     </div>
     <div class="d-header-right">
       <div class="d-mnav">
-        <button class="mnav-btn" onclick="changeMonth(-1)">&#8249;</button>
+        <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
         <span class="month-label" id="d-month-label"></span>
-        <button class="mnav-btn" onclick="changeMonth(1)">&#8250;</button>
+        <button class="mnav-btn" onclick="changeMonth(1)">›</button>
       </div>
       <button class="icon-btn" onclick="openTeam()">&#x1F465;</button>
     </div>
   </div>
   <div class="d-today-bar">
     <span class="dtb-label">&#x1F4CD; Hoje</span>
-    <div class="dtb-events" id="d-today-body"><span class="dtb-empty">&#8212;</span></div>
+    <div class="dtb-events" id="d-today-body"><span class="dtb-empty">—</span></div>
     <div class="d-legend" id="d-legend"></div>
   </div>
   <div class="d-toolbar">
@@ -330,7 +330,6 @@ function loadState(){
     var s=JSON.parse(localStorage.getItem('escala_v5')||'{}');
     S.team=s.team||[];S.schedule=s.schedule||{};S.events=s.events||{};
     S.liderEmails=s.liderEmails||'';
-    // Only override sheetId/scriptUrl if user has explicitly saved them
     if(s.sheetId)S.sheetId=s.sheetId;
     if(s.scriptUrl)S.scriptUrl=s.scriptUrl;
   }catch(e){}
@@ -382,7 +381,6 @@ function renderMCal(today){
     if(evts.length)cls+=' has-entry';if(S.sel===key)cls+=' selected';
     cell.className=cls;
     h='<span class="day-num">'+d+'</span><div class="dots">';
-    // One dot per event: green if has operator, red if vacant
     evts.forEach(function(ev){
       var hasOp=false;
       for(var ei=0;ei<entries.length;ei++){if(entries[ei].event===ev){hasOp=true;break}}
@@ -417,15 +415,13 @@ function renderDCal(today){
     if(isToday)h+='<span class="today-badge">Hoje</span>';
     h+='<div class="day-d-evps">';
     evtNames.forEach(function(ev){
-      // Get ALL operators for this event
       var ops=entries.filter(function(e){return e.event===ev});
       var filled=ops.length>0;
       h+='<div class="day-d-evp '+(filled?'filled':'vacant')+'">';
       h+='<span class="day-d-evp-name" title="'+ev+'">'+ev+'</span>';
-      h+='<span class="day-d-evp-sep">&#8250;</span>';
+      h+='<span class="day-d-evp-sep">›</span>';
       if(filled){
-        // Show first operator name (space is tight in cell)
-        var label=ops[0].name+(ops.length>1?' +'+( ops.length-1):'');
+        var label=ops[0].name+(ops.length>1?' +'+(ops.length-1):'');
         h+='<span class="day-d-evp-op">'+label+'</span>';
         if(!isPast)h+='<button class="day-d-evp-rm" onclick="removeEntry(event,\''+key+'\',\''+ev+'\',null)">&#x2715;</button>';
       }else{
@@ -433,12 +429,11 @@ function renderDCal(today){
       }
       h+='</div>';
     });
-    // entries for events not in fixed list
     entries.forEach(function(en){
       if(evtNames.indexOf(en.event)===-1){
         h+='<div class="day-d-evp filled">';
         h+='<span class="day-d-evp-name" title="'+en.event+'">'+en.event+'</span>';
-        h+='<span class="day-d-evp-sep">&#8250;</span>';
+        h+='<span class="day-d-evp-sep">›</span>';
         h+='<span class="day-d-evp-op">'+en.name+'</span>';
         if(!isPast)h+='<button class="day-d-evp-rm" onclick="removeEntry(event,\''+key+'\',\''+en.event+'\',\''+en.name+'\')">&#x2715;</button>';
         h+='</div>';
@@ -469,7 +464,7 @@ function renderTodayCards(today){
     if(!allEvts.length){el.innerHTML='<span class="today-empty">Nenhum evento hoje</span>';return}
     el.innerHTML=allEvts.map(function(ev){
       var ops=entries.filter(function(e){return e.event===ev});
-      var names=ops.length?ops.map(function(o){return o.name}).join(', '):'&#8212; vazio';
+      var names=ops.length?ops.map(function(o){return o.name}).join(', '):'— vazio';
       var filled=ops.length>0;
       return '<div class="today-evp">'+
         '<span class="evt-tag" style="'+(filled?'background:#f0f7f3;color:#2d6a4f;border-color:#b2d8c4':'background:#fff5f5;color:#c0392b;border-color:#f5c6c6')+'">'+ev+'</span>'+
@@ -496,12 +491,14 @@ function renderDetailBody(bodyId,key,isPast){
   evtNames.forEach(function(ev){if(!seen[ev]){seen[ev]=1;allEvts.push(ev)}});
   entries.forEach(function(en){if(!seen[en.event]){seen[en.event]=1;allEvts.push(en.event)}});
   allEvts=sortEvts(allEvts);
+  // lembra qual evento estava escolhido, para nao voltar ao primeiro ao redesenhar
+  var prevSel=document.getElementById('pick-evt-'+key);
+  var prevVal=prevSel?prevSel.value:null;
   var h='';
   if(!allEvts.length){
     h='<div class="empty-msg">Nenhum evento para este dia.<br>Adicione na aba Eventos da planilha.</div>';
   }else{
     allEvts.forEach(function(ev,i){
-      // Get ALL operators for this event
       var ops=entries.filter(function(e){return e.event===ev});
       var filled=ops.length>0;
       h+='<div class="evp-card" style="animation-delay:'+(i*0.05)+'s">';
@@ -527,7 +524,7 @@ function renderDetailBody(bodyId,key,isPast){
       h+='<div class="add-section"><div class="add-lbl">Escalar operador</div>';
       h+='<div style="margin-bottom:10px"><div class="add-lbl" style="margin-bottom:5px">Evento</div>';
       h+='<select id="pick-evt-'+key+'" style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:\'Nunito\',sans-serif;font-size:.9rem;color:var(--text);outline:none">';
-      allEvts.forEach(function(ev){h+='<option value="'+ev+'">'+ev+'</option>'});
+      allEvts.forEach(function(ev){h+='<option value="'+ev+'"'+(ev===prevVal?' selected':'')+'>'+ev+'</option>'});
       h+='</select></div>';
       S.team.forEach(function(m){
         h+='<button class="member-option" onclick="addEntry(\''+key+'\',\''+m.name+'\')">';
@@ -579,7 +576,7 @@ function closeSidebar(){
   _sKey=null;
 }
 
-// ADD/REMOVE
+// ===== ADD/REMOVE (NOVO: salva so a mudanca e espera confirmacao) =====
 function addEntry(key,memberName){
   var sel=document.getElementById('pick-evt-'+key);
   if(!sel)return;
@@ -588,36 +585,59 @@ function addEntry(key,memberName){
   for(var i=0;i<S.team.length;i++){if(S.team[i].name===memberName){member=S.team[i];break}}
   if(!member)return;
   if(!S.schedule[key])S.schedule[key]=[];
-  // Check if this person is already in this event
   for(var j=0;j<S.schedule[key].length;j++){
     if(S.schedule[key][j].event===eventName&&S.schedule[key][j].name===memberName){
       toast(memberName+' ja esta neste evento');return;
     }
   }
   S.schedule[key].push({event:eventName,name:member.name,color:member.color,email:member.email});
-  saveState();autoSave();
-  var isPast=isPastKey(key);
-  if(isDesktop())renderDetailBody('d-sidebar-body',key,isPast);
-  else renderDetailBody('m-sheet-body',key,isPast);
-  render();
-  toast(member.name+' escalado(a) para '+eventName);
+  saveState();refreshViews();
+  toast('Salvando...');
+  sendOp('add',{date:key,event:eventName,name:member.name,email:member.email||''})
+    .then(function(){
+      toast('✔ '+member.name+' escalado(a) para '+eventName);
+      loadFromSheet(true); // traz tambem o que os outros marcaram
+    })
+    .catch(function(){
+      // desfaz na tela, porque nao salvou
+      S.schedule[key]=(S.schedule[key]||[]).filter(function(e){return !(e.event===eventName&&e.name===member.name)});
+      if(!S.schedule[key].length)delete S.schedule[key];
+      saveState();refreshViews();
+      toast('⚠ Não salvou. Tente de novo.');
+    });
 }
 
 function removeEntry(ev,key,eventName,memberName){
   if(ev)ev.stopPropagation();
   if(!S.schedule[key])return;
   if(memberName){
-    // Remove specific person from event
     S.schedule[key]=S.schedule[key].filter(function(e){return !(e.event===eventName&&e.name===memberName)});
   }else{
-    // Remove all operators from event
     S.schedule[key]=S.schedule[key].filter(function(e){return e.event!==eventName});
   }
   if(!S.schedule[key].length)delete S.schedule[key];
-  saveState();autoSave();
-  var isPast=isPastKey(key);
-  if(isDesktop())renderDetailBody('d-sidebar-body',key,isPast);
-  else renderDetailBody('m-sheet-body',key,isPast);
+  saveState();refreshViews();
+  toast('Removendo...');
+  sendOp('remove',{date:key,event:eventName,name:memberName||''})
+    .then(function(){toast('✔ Removido');loadFromSheet(true)})
+    .catch(function(){toast('⚠ Não removeu. Tente de novo.');loadFromSheet(true)});
+}
+
+// envia UMA mudanca para a planilha e espera a confirmacao
+function sendOp(action,row){
+  return fetch(S.scriptUrl,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:action,row:row})
+  })
+  .then(function(r){return r.json()})
+  .then(function(res){if(!res.ok)throw new Error(res.erro||'falha');return res});
+}
+
+// redesenha calendario e o painel que estiver aberto
+function refreshViews(){
+  if(_sKey)renderDetailBody('d-sidebar-body',_sKey,isPastKey(_sKey));
+  if(S.sel)renderDetailBody('m-sheet-body',S.sel,isPastKey(S.sel));
   render();
 }
 
@@ -656,38 +676,18 @@ function changeMonth(d){
 function goToday(){var n=new Date();S.year=n.getFullYear();S.month=n.getMonth();render()}
 
 // SYNC
-var _saveTimer=null;
-function autoSave(){
-  clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(function(){pushToSheet()},800);
-}
 function pushTeam(){
   if(!S.scriptUrl)return;
   fetch(S.scriptUrl+'?action=saveTeam&data='+encodeURIComponent(JSON.stringify(S.team)),{mode:'no-cors'}).catch(function(){});
 }
-function pushToSheet(){
-  if(!S.scriptUrl)return;
-  var rows=[];
-  Object.keys(S.schedule).forEach(function(date){
-    S.schedule[date].forEach(function(e){
-      rows.push({date:date,event:e.event,name:e.name,email:e.email||''});
-    });
-  });
-  fetch(S.scriptUrl+'?action=save&data='+encodeURIComponent(JSON.stringify(rows)),{mode:'no-cors'})
-    .then(function(){showSyncStatus('Salvo')})
-    .catch(function(){showSyncStatus('Falha ao salvar')});
-}
-function showSyncStatus(msg){
-  // Status shown via toast on mobile, silently on desktop
-  if(!isDesktop())toast(msg);
-}
+// botao "Salvar": NAO envia mais a escala inteira (era isso que apagava marcacoes)
 function exportToSheet(){
-  if(!S.scriptUrl){toast('Configure a planilha primeiro');return}
-  pushToSheet();toast('Enviando...');
+  toast('As escalas já salvam sozinhas ✔');
+  loadFromSheet();
 }
-function loadFromSheet(){
+function loadFromSheet(silent){
   if(!S.scriptUrl){toast('Configure a planilha primeiro');return}
-  toast('Carregando...');
+  if(!silent)toast('Carregando...');
   fetch(S.scriptUrl+'?action=loadAll')
     .then(function(r){return r.json()})
     .then(function(data){
@@ -707,19 +707,14 @@ function loadFromSheet(){
         if(!S.events[ev.date])S.events[ev.date]=[];
         S.events[ev.date].push(ev.name);
       });
-      // Load lider emails if present
       if(data.lideres&&data.lideres.length){
         S.liderEmails=data.lideres.join('\n');
-        var el=document.getElementById('cfg-lider-emails');
-        if(el)el.value=S.liderEmails;
       }
-      // Load team from sheet — shared across all users
       if(data.team&&data.team.length){
         S.team=data.team;
         renderTeamList();
         renderLegend();
       }
-      // Reassign colors to schedule entries based on loaded team
       Object.keys(S.schedule).forEach(function(date){
         S.schedule[date].forEach(function(entry){
           var m=null;
@@ -727,9 +722,11 @@ function loadFromSheet(){
           if(m)entry.color=m.color;
         });
       });
-      saveState();render();toast('Carregado com sucesso');
+      saveState();
+      refreshViews();
+      if(!silent)toast('Carregado com sucesso');
     })
-    .catch(function(){toast('Erro ao carregar')});
+    .catch(function(){if(!silent)toast('Erro ao carregar')});
 }
 
 // TOAST
